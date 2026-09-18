@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VAYRA FOOTWEAR – Full-Stack Architecture & Migration</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0d0d11;
+      --card-dark: #181822;
+      --border-dark: #272738;
+      --gold: #d4af37;
+      --gold-light: #f5e6a2;
+      --blue: #3b82f6;
+      --green: #10b981;
+      --red: #ef4444;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      user-select: none;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 36px;
+      border-bottom: 1px solid var(--border-dark);
+      background: rgba(13, 13, 17, 0.85);
+      backdrop-filter: blur(12px);
+      z-index: 50;
+    }
+    .brand-logo {
+      font-family: 'Cinzel', serif;
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 4px;
+      color: var(--gold);
+    }
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .slide-indicator {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      padding: 6px 14px;
+      background: var(--card-dark);
+      border-radius: 999px;
+      border: 1px solid var(--border-dark);
+    }
+    .btn {
+      background: var(--card-dark);
+      border: 1px solid var(--border-dark);
+      color: var(--text-main);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn:hover {
+      background: var(--gold);
+      color: #000;
+      border-color: var(--gold);
+    }
+    .deck-container {
+      position: relative;
+      flex: 1;
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 36px;
+    }
+    .slide {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      height: 90%;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    .tagline {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .slide-title {
+      font-family: 'Cinzel', serif;
+      font-size: 34px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 24px;
+      line-height: 1.25;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .cards-grid {
+      display: grid;
+      gap: 20px;
+      width: 100%;
+    }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .grid-2 { grid-template-columns: repeat(2, 1fr); }
+    .grid-4 { grid-template-columns: repeat(4, 1fr); }
+    .card {
+      background: var(--card-dark);
+      border: 1px solid var(--border-dark);
+      border-radius: 14px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: transparent;
+    }
+    .card.blue-top::before { background: var(--blue); }
+    .card.gold-top::before { background: var(--gold); }
+    .card.green-top::before { background: var(--green); }
+    .card.red-top::before { background: var(--red); }
+    .card-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-subtitle {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gold);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .card-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 13.5px;
+      line-height: 1.55;
+      color: var(--text-muted);
+    }
+    .card-list li {
+      position: relative;
+      padding-left: 18px;
+    }
+    .card-list li::before {
+      content: '•';
+      position: absolute;
+      left: 0;
+      color: var(--gold);
+      font-size: 18px;
+      line-height: 1;
+    }
+    .code-block {
+      background: #09090d;
+      border: 1px solid #1f1f2e;
+      border-radius: 8px;
+      padding: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      line-height: 1.6;
+      color: #e2e8f0;
+      white-space: pre;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-blue { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .badge-gold { background: rgba(212, 175, 55, 0.15); color: #f5e6a2; border: 1px solid rgba(212, 175, 55, 0.3); }
+    .badge-green { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .title-slide {
+      text-align: center;
+      align-items: center;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .hero-pill {
+      display: inline-block;
+      padding: 6px 18px;
+      border-radius: 999px;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+    }
+    .hero-h1 {
+      font-family: 'Cinzel', serif;
+      font-size: 64px;
+      font-weight: 900;
+      letter-spacing: 6px;
+      color: #fff;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+    .hero-h2 {
+      font-size: 24px;
+      font-weight: 500;
+      color: var(--gold-light);
+      margin-bottom: 24px;
+    }
+    .hero-desc {
+      font-size: 16px;
+      color: var(--text-muted);
+      line-height: 1.7;
+      max-width: 750px;
+      margin-bottom: 36px;
+    }
+    .stack-tags {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+    }
+    footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 36px;
+      border-top: 1px solid var(--border-dark);
+      background: rgba(13, 13, 17, 0.85);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .key-hints span {
+      background: #222230;
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      margin: 0 4px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand-logo">VAYRA</div>
+    <div class="nav-controls">
+      <div class="slide-indicator" id="counter">1 / 12</div>
+      <button class="btn" id="prevBtn">← Prev</button>
+      <button class="btn" id="nextBtn">Next →</button>
+      <button class="btn" id="fullBtn">⛶ Fullscreen</button>
+    </div>
+  </header>
+
+  <div class="deck-container">
+    <!-- SLIDE 1 -->
+    <div class="slide active title-slide" data-slide="1">
+      <div class="hero-pill">ENTERPRISE COMMERCE SYSTEM</div>
+      <h1 class="hero-h1">VAYRA FOOTWEAR</h1>
+      <h2 class="hero-h2">Modern E-Commerce Architecture & Full-Stack System Design</h2>
+      <p class="hero-desc">
+        Comprehensive overview of VAYRA's transition from client-side prototype to an independent Spring Boot microservice, dedicated MySQL relational database, and luxury customer storefront.
+      </p>
+      <div class="stack-tags">
+        <span class="badge badge-gold">Spring Boot 4 / Java 17</span>
+        <span class="badge badge-blue">MySQL 8 Database</span>
+        <span class="badge badge-green">React 19 + Vite</span>
+        <span class="badge badge-gold">Tailwind CSS</span>
+        <span class="badge badge-blue">Dedicated Port 8082</span>
+      </div>
+    </div>
+
+    <!-- SLIDE 2 -->
+    <div class="slide" data-slide="2">
+      <div class="tagline">PROJECT VISION</div>
+      <h2 class="slide-title">Executive Summary: From Prototype to Production</h2>
+      <div class="cards-grid grid-3">
+        <div class="card red-top">
+          <div class="card-title">1. Legacy Challenges</div>
+          <div class="card-subtitle">Client-Side Limitations</div>
+          <ul class="card-list">
+            <li><strong>Volatile Storage:</strong> Products and orders stored in browser localStorage, lost upon clearing history.</li>
+            <li><strong>Multi-Device Desync:</strong> Changes made in Admin never reached other customers' devices.</li>
+            <li><strong>Coupling Hazard:</strong> Risk of accidental collision with TWO BROTHERS website and databases.</li>
+            <li><strong>Hardcoded Mock Loops:</strong> Fallback logic automatically re-injected unwanted demo shoes.</li>
+          </ul>
+        </div>
+        <div class="card blue-top">
+          <div class="card-title">2. Architectural Solution</div>
+          <div class="card-subtitle">Enterprise Separation</div>
+          <ul class="card-list">
+            <li><strong>Dedicated Backend:</strong> Spring Boot 4 REST service running on custom port <code>8082</code>.</li>
+            <li><strong>Relational DB:</strong> Independent MySQL database (<code>vayra_footwear_db</code>) on port <code>3306</code>.</li>
+            <li><strong>Single Source of Truth:</strong> MySQL governs 100% of product inventory, slides, and orders.</li>
+            <li><strong>Zero-Touch Isolation:</strong> Zero changes to Two Brothers store, backend (8081), or database.</li>
+          </ul>
+        </div>
+        <div class="card green-top">
+          <div class="card-title">3. Business Outcomes</div>
+          <div class="card-subtitle">Production Ready</div>
+          <ul class="card-list">
+            <li><strong>Absolute Precision:</strong> Exactly what Admin configures appears on the storefront.</li>
+            <li><strong>Live Fulfillment:</strong> Orders persistently recorded with customer phone, address, and line items.</li>
+            <li><strong>Dynamic Content:</strong> Hero slides and promotions managed dynamically with zero code rebuilds.</li>
+            <li><strong>Production Builds:</strong> Clean builds with 0 frontend lint errors and verified Maven JAR.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3 -->
+    <div class="slide" data-slide="3">
+      <div class="tagline">SYSTEM TOPOLOGY</div>
+      <h2 class="slide-title">3-Tier Enterprise Full-Stack Architecture</h2>
+      <div class="cards-grid grid-3">
+        <div class="card blue-top">
+          <div class="card-title">Tier 1: Client Front-End</div>
+          <div class="card-subtitle">Port 5173 • React 19 + Vite</div>
+          <ul class="card-list">
+            <li><strong>Customer Storefront:</strong> Luxury monochrome theme, responsive grid, dynamic hero carousel.</li>
+            <li><strong>Interactive Filtering:</strong> Category tabs (Sneakers, Loafers, Boots), price sorting, live search.</li>
+            <li><strong>Cart & Checkout:</strong> Slide-out drawer with real-time subtotal and direct modal checkout.</li>
+            <li><strong>Admin Command Hub:</strong> Real-time KPIs, multi-image uploader, order management.</li>
+            <li><strong>API Client:</strong> Centralized Axios/Fetch layer with transparent offline caching.</li>
+          </ul>
+        </div>
+        <div class="card gold-top">
+          <div class="card-title">Tier 2: Backend Microservice</div>
+          <div class="card-subtitle">Port 8082 • Spring Boot 4 / Java 17</div>
+          <ul class="card-list">
+            <li><strong>REST API:</strong> Modular controllers for <code>/api/products</code>, <code>/api/slides</code>, <code>/api/orders</code>.</li>
+            <li><strong>Spring Data JPA:</strong> Hibernate ORM with custom repository status filters.</li>
+            <li><strong>Collection Synchronization:</strong> Map-based JSON updates preventing empty list overrides.</li>
+            <li><strong>CORS Policy:</strong> Seamless pre-flight allowance for Vite frontend (5173).</li>
+            <li><strong>Auto-DDL:</strong> Automated schema lifecycle management.</li>
+          </ul>
+        </div>
+        <div class="card green-top">
+          <div class="card-title">Tier 3: Relational Persistence</div>
+          <div class="card-subtitle">Port 3306 • MySQL 8</div>
+          <ul class="card-list">
+            <li><strong>vayra_footwear_db:</strong> Dedicated schema isolated from all other databases.</li>
+            <li><strong>Normalized Structure:</strong> Dedicated tables for products, images, sizes, specs, slides, orders.</li>
+            <li><strong>Cascade Integrity:</strong> Deleting a footwear model automatically deletes child images.</li>
+            <li><strong>Complete Isolation:</strong> 0 interaction with <code>two_brothers_db</code> on port 8081.</li>
+            <li><strong>Index Optimization:</strong> Indexed by <code>active</code> and <code>created_at</code>.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4 -->
+    <div class="slide" data-slide="4">
+      <div class="tagline">RELATIONAL SCHEMA</div>
+      <h2 class="slide-title">Dedicated MySQL Database: vayra_footwear_db</h2>
+      <div class="cards-grid grid-2">
+        <div class="card blue-top">
+          <div class="card-title">Core Footwear Tables</div>
+          <div class="card-subtitle">products & child collections</div>
+          <ul class="card-list">
+            <li><strong>products:</strong> id (PK), name, price, original_price, category, description, stock, active, featured, material, created_at, updated_at.</li>
+            <li><strong>product_images:</strong> product_id (FK), images (URL) — <em>Strict 1:1 row mapping.</em></li>
+            <li><strong>product_sizes:</strong> product_id (FK), sizes (e.g. UK 7, UK 8, UK 9, UK 10).</li>
+            <li><strong>product_details:</strong> product_id (FK), details (Handcrafted leather, Italian sole).</li>
+            <li><strong>Cascade Delete:</strong> Deleting a product removes all linked image rows cleanly.</li>
+          </ul>
+        </div>
+        <div class="card gold-top">
+          <div class="card-title">Banners & Fulfillment Tables</div>
+          <div class="card-subtitle">slides, orders & order_items</div>
+          <ul class="card-list">
+            <li><strong>slides:</strong> id (PK), title, subtitle, image, tag, discount, cta_text, sort_order, active.</li>
+            <li><strong>orders:</strong> id (PK), customer_name, customer_email, customer_phone, shipping_address, payment_method, total_amount, status.</li>
+            <li><strong>order_items:</strong> id, order_id (FK), product_id, title, size, price, quantity.</li>
+            <li><strong>Lifecycle:</strong> Admin can advance order statuses in real time.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 5 -->
+    <div class="slide" data-slide="5">
+      <div class="tagline">DATA INTEGRITY</div>
+      <h2 class="slide-title">The Single Source of Truth Principle</h2>
+      <div class="cards-grid grid-4">
+        <div class="card blue-top">
+          <div class="card-title">Zero Means Zero</div>
+          <div class="card-subtitle">No Ghost Products</div>
+          <ul class="card-list">
+            <li>If Admin deletes all products, storefront renders exactly 0 shoes.</li>
+            <li>No mock products or demo fallback shoes will ever appear automatically.</li>
+          </ul>
+        </div>
+        <div class="card green-top">
+          <div class="card-title">Exact Counts</div>
+          <div class="card-subtitle">1-to-1 Accuracy</div>
+          <ul class="card-list">
+            <li>Add 1 shoe = Exactly 1 shoe shows up.</li>
+            <li>Add 5 shoes = Exactly 5 shoes show up.</li>
+            <li>Real-time synchronization across all devices.</li>
+          </ul>
+        </div>
+        <div class="card gold-top">
+          <div class="card-title">Strict Images</div>
+          <div class="card-subtitle">Exact Row Count</div>
+          <ul class="card-list">
+            <li>1 uploaded image = Exactly 1 row in <code>product_images</code>.</li>
+            <li>3 images = Exactly 3 rows in database.</li>
+            <li>0 images = Exactly 0 rows.</li>
+          </ul>
+        </div>
+        <div class="card red-top">
+          <div class="card-title">Status Control</div>
+          <div class="card-subtitle">Visibility Toggles</div>
+          <ul class="card-list">
+            <li>Toggle <code>active = false</code> instantly hides product from storefront.</li>
+            <li>Remains fully visible and editable inside Admin Dashboard.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 6 -->
+    <div class="slide" data-slide="6">
+      <div class="tagline">BACKEND ARCHITECTURE</div>
+      <h2 class="slide-title">Spring Boot REST API Microservice (Port 8082)</h2>
+      <div class="cards-grid grid-2">
+        <div class="card blue-top">
+          <div class="card-title">Product & Inventory Endpoints</div>
+          <div class="card-subtitle">ProductController.java</div>
+          <ul class="card-list">
+            <li><code>GET /api/products</code> — Admin view (all products).</li>
+            <li><code>GET /api/products?activeOnly=true</code> — Customer storefront query.</li>
+            <li><code>GET /api/products/{id}</code> — Single footwear item with images & sizes.</li>
+            <li><code>POST /api/products</code> — Creates product with nested collections.</li>
+            <li><code>PUT /api/products/{id}</code> — Atomic synchronization of fields & images.</li>
+            <li><code>PATCH /api/products/{id}/stock</code> — Instant stock adjustment.</li>
+            <li><code>PATCH /api/products/{id}/status</code> — Toggle active visibility.</li>
+            <li><code>DELETE /api/products/{id}</code> — Permanent cascade deletion.</li>
+          </ul>
+        </div>
+        <div class="card gold-top">
+          <div class="card-title">Slides & Orders Endpoints</div>
+          <div class="card-subtitle">SlideController & OrderController</div>
+          <ul class="card-list">
+            <li><code>GET /api/slides</code> — Retrieves promotional hero banners.</li>
+            <li><code>POST /api/slides</code> — Adds new promotional slide.</li>
+            <li><code>PUT /api/slides/{id}</code> — Updates banner images & CTA links.</li>
+            <li><code>DELETE /api/slides/{id}</code> — Removes slide from hero carousel.</li>
+            <li><code>GET /api/orders</code> — Complete order ledger for Admin fulfillment.</li>
+            <li><code>POST /api/orders</code> — Checkout order submission with line items.</li>
+            <li><code>PATCH /api/orders/{id}/status</code> — Updates status (CONFIRMED/SHIPPED).</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 7 -->
+    <div class="slide" data-slide="7">
+      <div class="tagline">FRONTEND USER EXPERIENCE</div>
+      <h2 class="slide-title">Customer Storefront: Minimalist Luxury Experience</h2>
+      <div class="cards-grid grid-3">
+        <div class="card blue-top">
+          <div class="card-title">Brand Visual Identity</div>
+          <div class="card-subtitle">Luxury Aesthetic</div>
+          <ul class="card-list">
+            <li><strong>Monochrome Luxury:</strong> Deep blacks, crisp white cards, and platinum accents.</li>
+            <li><strong>Clean Header:</strong> Streamlined customer navigation; Drops and Admin links removed for focus.</li>
+            <li><strong>Responsive Grid:</strong> Fluid layouts across mobile, tablet, and widescreen.</li>
+          </ul>
+        </div>
+        <div class="card gold-top">
+          <div class="card-title">Discovery Engine</div>
+          <div class="card-subtitle">Dynamic Carousel & Filters</div>
+          <ul class="card-list">
+            <li><strong>Dynamic Hero Slider:</strong> Promotional slides loaded directly from MySQL.</li>
+            <li><strong>Instant Filtering:</strong> Category tabs (Loafers, Boots, Formals, Sneakers).</li>
+            <li><strong>Interactive Details:</strong> High-res photo gallery, size chips, and stock indicators.</li>
+          </ul>
+        </div>
+        <div class="card green-top">
+          <div class="card-title">Cart & Checkout</div>
+          <div class="card-subtitle">Frictionless Purchase Flow</div>
+          <ul class="card-list">
+            <li><strong>Bag Drawer:</strong> Slide-out cart with real-time subtotal and quantity controls.</li>
+            <li><strong>Modal Checkout:</strong> Form capturing address, phone, and payment preference.</li>
+            <li><strong>Instant Confirmation:</strong> Real order created directly in MySQL backend.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 8 -->
+    <div class="slide" data-slide="8">
+      <div class="tagline">ADMIN OPERATIONS</div>
+      <h2 class="slide-title">Admin Command Center: Total Store Control</h2>
+      <div class="cards-grid grid-2">
+        <div class="card blue-top">
+          <div class="card-title">1. Catalog & Inventory Control</div>
+          <div class="card-subtitle">Products, Images & Sizes</div>
+          <ul class="card-list">
+            <li><strong>Add / Edit Modals:</strong> Fields for name, price, MRP, category, stock, and material.</li>
+            <li><strong>Multi-Image Manager:</strong> Add/remove image URLs with live thumbnails and strict count preservation.</li>
+            <li><strong>Quick Action Toggles:</strong> 1-click active/inactive visibility and rapid stock adjustments.</li>
+            <li><strong>Clean Cascade Delete:</strong> Purges product and linked rows from MySQL.</li>
+          </ul>
+        </div>
+        <div class="card gold-top">
+          <div class="card-title">2. Slides & Order Management</div>
+          <div class="card-subtitle">Promotions & Fulfillment</div>
+          <ul class="card-list">
+            <li><strong>Live KPI Dashboard:</strong> Real-time counts for Total Shoes, Active Shoes, and Pending Orders.</li>
+            <li><strong>Hero Slide Manager:</strong> Create promotional campaigns with custom CTA buttons.</li>
+            <li><strong>Order Ledger:</strong> View customer contact info, shipping address, and purchased items.</li>
+            <li><strong>Fulfillment Progression:</strong> Advance orders from PENDING → CONFIRMED → SHIPPED → DELIVERED.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 9 -->
+    <div class="slide" data-slide="9">
+      <div class="tagline">STRUCTURE & STANDARDS</div>
+      <h2 class="slide-title">Clean Codebase & Architectural Organization</h2>
+      <div class="cards-grid grid-2">
+        <div class="card blue-top">
+          <div class="card-title">Frontend Architecture</div>
+          <div class="card-subtitle">vayra-footwear/</div>
+          <div class="code-block">vayra-footwear/
+├── src/
+│   ├── components/
+│   │   ├── customer/
+│   │   │   ├── Navbar.jsx (Clean customer header)
+│   │   │   ├── StackedSlider.jsx (Hero carousel)
+│   │   │   ├── FilterBar.jsx (Filters & search)
+│   │   │   ├── ProductCard.jsx (Footwear card)
+│   │   │   ├── ProductPage.jsx (Gallery & sizes)
+│   │   │   ├── BagDrawer.jsx (Cart drawer)
+│   │   │   ├── CheckoutPage.jsx (Order checkout)
+│   │   │   └── Footer.jsx (Brand footer)
+│   │   └── admin/
+│   │       └── AdminDashboard.jsx (Admin hub)
+│   ├── services/
+│   │   └── api.js (MySQL REST client on 8082)
+│   └── App.jsx (Root view coordinator)</div>
+        </div>
+        <div class="card gold-top">
+          <div class="card-title">Backend Architecture</div>
+          <div class="card-subtitle">vayra-footwear-backend/</div>
+          <div class="code-block">vayra-footwear-backend/
+├── pom.xml (Spring Boot 4.1.1, JPA, MySQL)
+└── src/main/
+    ├── resources/
+    │   └── application.properties (Port 8082, DB config)
+    └── java/com/vayra/
+        ├── VayraBackendApplication.java
+        ├── config/WebConfig.java (CORS on 5173)
+        ├── entity/
+        │   ├── Product.java (@ElementCollections)
+        │   ├── Slide.java (Hero slides)
+        │   ├── CustomerOrder.java & OrderItem.java
+        ├── repository/
+        │   ├── ProductRepository.java
+        │   ├── SlideRepository.java
+        │   └── OrderRepository.java
+        └── controller/
+            ├── ProductController.java
+            ├── SlideController.java
+            └── OrderController.java</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 10 -->
+    <div class="slide" data-slide="10">
+      <div class="tagline">VERIFICATION MATRIX</div>
+      <h2 class="slide-title">Quality Assurance & Isolation Verification</h2>
+      <div class="cards-grid grid-3">
+        <div class="card green-top">
+          <div class="card-title">1. Build Validation</div>
+          <div class="card-subtitle">0 Errors Passed</div>
+          <ul class="card-list">
+            <li><strong>Frontend:</strong> <code>npm run build</code> succeeded in 321ms with zero syntax or bundle errors.</li>
+            <li><strong>Backend:</strong> <code>./mvnw clean package</code> produced verified executable JAR.</li>
+            <li><strong>Runtime:</strong> Active background daemons on ports 5173 and 8082.</li>
+          </ul>
+        </div>
+        <div class="card blue-top">
+          <div class="card-title">2. Data & Image Tests</div>
+          <div class="card-subtitle">100% Passed</div>
+          <ul class="card-list">
+            <li><strong>Full CRUD:</strong> Verified POST, GET, PUT, PATCH, DELETE across all entities.</li>
+            <li><strong>Image Counts:</strong> 1 image = 1 row; 3 images = 3 rows; 0 images = 0 rows.</li>
+            <li><strong>Cascade Cleanup:</strong> Deleting products correctly purges all child rows.</li>
+          </ul>
+        </div>
+        <div class="card gold-top">
+          <div class="card-title">3. Isolation Guarantee</div>
+          <div class="card-subtitle">Zero Touches</div>
+          <ul class="card-list">
+            <li><strong>Two Brothers UI:</strong> 0 files touched in <code>two-brothers-store</code>.</li>
+            <li><strong>Two Brothers Backend:</strong> Operating untouched on port <code>8081</code>.</li>
+            <li><strong>Database:</strong> <code>two_brothers_db</code> untouched; 0 schema or data changes.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 11 -->
+    <div class="slide" data-slide="11">
+      <div class="tagline">FUTURE ENHANCEMENTS</div>
+      <h2 class="slide-title">Strategic Roadmap: Scaling VAYRA Forward</h2>
+      <div class="cards-grid grid-4">
+        <div class="card blue-top">
+          <div class="card-title">Phase 1: Media</div>
+          <div class="card-subtitle">Cloud Storage</div>
+          <ul class="card-list">
+            <li>AWS S3 / Cloudinary direct file upload from Admin.</li>
+            <li>Automatic WebP compression and global CDN delivery.</li>
+          </ul>
+        </div>
+        <div class="card green-top">
+          <div class="card-title">Phase 2: Payments</div>
+          <div class="card-subtitle">Gateways</div>
+          <ul class="card-list">
+            <li>Razorpay / Stripe integration for UPI and card checkout.</li>
+            <li>Webhooks for automatic order confirmation.</li>
+          </ul>
+        </div>
+        <div class="card gold-top">
+          <div class="card-title">Phase 3: Accounts</div>
+          <div class="card-subtitle">Customer Portal</div>
+          <ul class="card-list">
+            <li>JWT authentication and customer profile management.</li>
+            <li>Saved addresses, order history, and wishlist.</li>
+          </ul>
+        </div>
+        <div class="card red-top">
+          <div class="card-title">Phase 4: Comms</div>
+          <div class="card-subtitle">Notifications</div>
+          <ul class="card-list">
+            <li>WhatsApp Business API automated dispatch updates.</li>
+            <li>Automated email invoices and tracking links.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 12 -->
+    <div class="slide title-slide" data-slide="12">
+      <div class="hero-pill">PROJECT COMPLETION</div>
+      <h1 class="hero-h1">THANK YOU</h1>
+      <h2 class="hero-h2">VAYRA Footwear Full-Stack Enterprise Platform</h2>
+      <p class="hero-desc">
+        Successfully transitioned to a scalable, dedicated Spring Boot backend and MySQL relational database. The platform is decoupled, secure, and ready for production operations.
+      </p>
+      <div class="stack-tags">
+        <span class="badge badge-gold">Frontend: http://localhost:5173</span>
+        <span class="badge badge-blue">Backend: http://localhost:8082</span>
+        <span class="badge badge-green">Database: vayra_footwear_db (3306)</span>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div>VAYRA FOOTWEAR • Full-Stack Architecture & Migration Presentation</div>
+    <div class="key-hints">
+      Use <span>←</span> <span>→</span> arrow keys or <span>Space</span> to navigate  |  Press <span>F</span> for Fullscreen
+    </div>
+  </footer>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const counter = document.getElementById('counter');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const fullBtn = document.getElementById('fullBtn');
+    let currentSlide = 0;
+    const totalSlides = slides.length;
+
+    function showSlide(index) {
+      if (index < 0) index = 0;
+      if (index >= totalSlides) index = totalSlides - 1;
+      currentSlide = index;
+      slides.forEach((slide, i) => {
+        slide.classList.toggle('active', i === currentSlide);
+      });
+      counter.textContent = ;
+      prevBtn.disabled = currentSlide === 0;
+      nextBtn.disabled = currentSlide === totalSlides - 1;
+    }
+
+    prevBtn.addEventListener('click', () => showSlide(currentSlide - 1));
+    nextBtn.addEventListener('click', () => showSlide(currentSlide + 1));
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        showSlide(currentSlide + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        showSlide(currentSlide - 1);
+      } else if (e.key === 'f' || e.key === 'F') {
+        toggleFullScreen();
+      }
+    });
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    fullBtn.addEventListener('click', toggleFullScreen);
+    showSlide(0);
+  </script>
+</body>
+</html>
