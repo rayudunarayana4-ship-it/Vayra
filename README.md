@@ -1,16 +1,43 @@
-# React + Vite
+# VAYRA FOOTWEAR
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> STEP INTO YOUR STYLE.
 
-Currently, two official plugins are available:
+A modern, high-performance luxury footwear e-commerce application engineered with React 19, Vite, and Tailwind CSS.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
 
-## React Compiler
+- **Customer Storefront**:
+  - Luxury hero banner slider with smooth animations
+  - Curated footwear categories: Sneakers, Loafers, Boots, Formal, Sandals/Slides
+  - Interactive silhouette cards with stock status (In Stock, Low Stock, Sold Out)
+  - Detailed product page with UK shoe sizing (`UK 6` – `UK 11`), specs, care instructions
+  - Slide-out shopping bag drawer
+  - Direct WhatsApp order placement (+91 7396811099)
+  - Client-side branded A4 PDF invoice generator
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Admin Management Portal** (`#admin`):
+  - Live footwear inventory management
+  - Footwear creation and editing (+ Add Footwear)
+  - Hero banner slide manager
+  - Customer order tracker with status workflow (Placed → Confirmed → Dispatched → Delivered)
+  - Synchronized real-time single source of truth across browser tabs
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **Frontend**: React 19, Vite 8, Tailwind CSS v4
+- **Icons & Animation**: Lucide React, Framer Motion
+- **Invoicing**: jsPDF, jsPDF-AutoTable
+- **State & Sync**: React Hooks, BroadcastChannel, LocalStorage
+
+## Development
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+```
