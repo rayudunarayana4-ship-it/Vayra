@@ -7,6 +7,7 @@ import { ProductPage } from "./components/customer/ProductPage";
 import { BagDrawer } from "./components/customer/BagDrawer";
 import { CheckoutPage } from "./components/customer/CheckoutPage";
 import { Footer } from "./components/customer/Footer";
+import { FootwearChatbot } from "./components/customer/FootwearChatbot";
 import { AdminDashboard } from "./components/admin/AdminDashboard";
 import {
   fetchProducts,
@@ -388,6 +389,8 @@ export default function App() {
         onRemoveItem={handleRemoveItem}
         onCheckout={handleProceedToCheckout}
       />
+
+      <FootwearChatbot />
     </div>
   );
 }
